@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract errorHandlingProject {
+    uint256 public number;
+
+    // Function to set the number
+    function setNumber(uint256 _num) public {
+        require(_num > 0, "Value should be greater than zero");
+        number = _num;
+    }
+
+    // Function to find square of a number
+    function square() public {
+        uint256 newValue = number **2;
+        // Assert that the new value is greater than the current value
+        assert(newValue > number);
+        number = newValue;
+    }
+
+    // Function to reset the number to zero
+    function reset() public {
+        if (number == 0) {
+            revert("number is already zero");
+        }
+        number = 0;
+    }
+}
