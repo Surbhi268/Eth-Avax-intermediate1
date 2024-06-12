@@ -1,28 +1,36 @@
-// SPDX-License-Identifier: MIT
+//SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract errorHandlingProject {
-    uint256 public number;
+contract CarShowroom {
 
-    // Function to set the number
-    function setNumber(uint256 _num) public {
-        require(_num > 0, "Value should be greater than zero");
-        number = _num;
+  struct Car {
+    uint256 carId;
+    string Brand;
+    string model;
+    uint256 price;
+    address payable owner;
+  }
+
+  mapping(uint256 => Car) public cars;
+  event CarAdded(uint256 carId, string Brand, string model, uint256 price);
+  function addCar(uint256 _id, string memory _brand, string memory _model, uint256 _price) public {
+    assert(cars[_id].owner == address(0)); // Ensures no car with same ID exists
+    require(_price > 0, "Price must be greater than zero");
+    cars[_id] = Car({carId: _id,Brand: _brand, model: _model, price: _price, owner: payable(msg.sender)});
+    emit CarAdded(_id, _brand, _model, _price);
+  }
+  function buyCar(uint256 _id) public payable {
+    Car memory car = cars[_id];
+    require(car.owner != address(0), "Car does not exist");
+    require(msg.value >= car.price, "Insufficient funds to buy car. Please send at least the car's price."); 
+   if (car.owner == msg.sender) {
+      revert("You already own this car");
     }
 
-    // Function to find square of a number
-    function square() public {
-        uint256 newValue = number **2;
-        // Assert that the new value is greater than the current value
-        assert(newValue > number);
-        number = newValue;
+    car.owner.transfer(car.price);
+    cars[_id].owner = payable(msg.sender);
+    if (msg.value > car.price) {
+      payable(msg.sender).transfer(msg.value - car.price);
     }
-
-    // Function to reset the number to zero
-    function reset() public {
-        if (number == 0) {
-            revert("number is already zero");
-        }
-        number = 0;
-    }
+  }
 }
